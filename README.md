@@ -15,8 +15,6 @@ APPEND_OPCODES.app(123, (vm) => {
 Will be compiled as:
 
 ```
-import { expectStackChange, assert } from '@glimmer/util';
-
 APPEND_OPCODES.app(123, (vm) => {
   let { stack } = vm;
   let value = stack.pop();
