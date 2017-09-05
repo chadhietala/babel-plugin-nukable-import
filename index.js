@@ -7,7 +7,6 @@ function nukable(babel) {
       Program(path, state) {
         let { bindings } = path.scope;
         let { opts } = state;
-        let forRemoval = [];
 
         let bindingsToStrip = Object.keys(bindings).filter(b => {
           let binding = bindings[b];
@@ -26,9 +25,7 @@ function nukable(babel) {
             } else {
               if (t.isCallExpression(p.parentPath)) {
                 let _hasNestedBinding = hasNestedBinding(p.parentPath, bindingsToStrip);
-                if (_hasNestedBinding && isCallee(p)) {
-                  forRemoval.push(p.parentPath);
-                } else {
+                if (!_hasNestedBinding || !isCallee(p)) {
                   p.parentPath.remove();
                 }
               } else {
@@ -36,7 +33,7 @@ function nukable(babel) {
               }
             }
           });
-        })
+        });
       },
 
       ImportDeclaration(path, state) {

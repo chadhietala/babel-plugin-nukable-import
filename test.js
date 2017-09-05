@@ -68,6 +68,7 @@ QUnit.test('handles recursive removals', (assert) => {
   let transformed = transform(stripTight`
     import { a, b } from '@glimmer/debug';
     let A = 1 + 1;
+    a('wat');
     a('lol', b);
   `);
 
