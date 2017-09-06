@@ -75,8 +75,8 @@ function isCallee(path) {
 }
 
 function hasNestedBinding(path, bindingsToStrip) {
-  let { arguments } = path.node;
-  return arguments.some(arg => bindingsToStrip.indexOf(arg.name) > -1)
+  let { arguments: args } = path.node;
+  return args.some(arg => bindingsToStrip.indexOf(arg.name) > -1)
 }
 
 nukable.baseDir = function() {

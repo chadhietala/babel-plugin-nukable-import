@@ -1,6 +1,16 @@
 {
   "name": "babel-plugin-nukable-import",
   "version": "0.1.0",
+  "description": "Babel plugin for nuking bindings from imports",
+  "author": "Chad Hietala <chadhietala@gmail.com>",
+  "keywords": [
+    "babel-plugin"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chadhietala/babel-plugin-nukable-import"
+  },
   "scripts": {
     "test": "qunit test.js"
   },
