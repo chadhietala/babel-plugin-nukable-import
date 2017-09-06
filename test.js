@@ -90,3 +90,17 @@ QUnit.test('follows aliases', (assert) => {
   `)
 });
 
+QUnit.test('cleans unused imports', (assert) => {
+  let transformed = transform(stripTight`
+    import { a, b } from '@glimmer/debug';
+    import bar from './bar';
+    let A = 1 + 1;
+    a('wat');
+    a('lol', bar);
+  `);
+
+  assert.equal(transformed, stripTight`
+    let A = 1 + 1;
+  `)
+});
+
