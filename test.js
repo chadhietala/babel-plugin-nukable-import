@@ -104,3 +104,32 @@ QUnit.test('cleans unused imports', (assert) => {
   `)
 });
 
+
+QUnit.test('retains member expressions', (assert) => {
+  let transformed = transform(stripTight`
+    import { a, b } from '@glimmer/debug';
+    import bar from './bar';
+    let A = 1 + 1;
+    a('wat').split('').forEach(l => console.log(l));
+  `);
+
+  assert.equal(transformed, stripTight`
+    let A = 1 + 1;
+    'wat'.split('').forEach(l => console.log(l));
+  `)
+});
+
+QUnit.test('retains member expressions recursive', (assert) => {
+  let transformed = transform(stripTight`
+    import { a, b } from '@glimmer/debug';
+    import bar from './bar';
+    let A = 1 + 1;
+    a('wat', b).split('').forEach(l => console.log(l));
+  `);
+
+  assert.equal(transformed, stripTight`
+    let A = 1 + 1;
+    'wat'.split('').forEach(l => console.log(l));
+  `)
+});
+
