@@ -8,43 +8,11 @@ function nukable(babel) {
         enter(path, state) {
           let { bindings } = path.scope;
           let { opts } = state;
-
-          let bindingsToStrip = Object.keys(bindings).filter(b => {
+          let bindingsToStrip = state.opts.bindingsToStrip = Object.keys(bindings).filter(b => {
             let binding = bindings[b];
             return binding.kind === 'module' && binding.path.parentPath.node.source.value === opts.source;
           });
-
-          bindingsToStrip.forEach(b => {
-            let binding = bindings[b];
-            binding.referencePaths.forEach(p => {
-              if (t.isVariableDeclarator(p.parentPath.parentPath) || t.isAssignmentExpression(p.parentPath.parentPath)) {
-                if (opts.delegate && opts.delegate[p.node.name]) {
-                  opts.delegate[p.node.name](p, t);
-                } else {
-                  p.parentPath.replaceWith(p.parentPath.node.arguments[0]);
-                }
-              } else {
-                if (t.isCallExpression(p.parentPath)) {
-
-                  let _hasNestedBinding = hasNestedBinding(p.parentPath, bindingsToStrip);
-
-                  if (!_hasNestedBinding || !isCallee(p)) {
-                    if (t.isMemberExpression(p.parentPath.parentPath) || isArgument(p.parentPath, t)) {
-                      // e.g. strippable('foo').split('').forEach((l) => { ... })
-                      //      myFunc(strippable('foo'))
-                      p.parentPath.replaceWith(p.parentPath.node.arguments[0])
-                    } else {
-                      p.parentPath.remove();
-                    }
-                  }
-                } else {
-                  if (!t.isObjectProperty(p.parentPath)) {
-                    p.remove();
-                  }
-                }
-              }
-            });
-          });
+          state.opts.bindingPaths = bindingsToStrip.map((b) => bindings[b].referencePaths).reduce((a, b) => { return b.concat(a)}, []);
         },
         exit(path) {
           path.scope.crawl();
@@ -70,6 +38,27 @@ function nukable(babel) {
             }
           });
         },
+      },
+      CallExpression(path, state) {
+        let removable = path.find((p) => {
+          return state.opts.bindingPaths.indexOf(p.get('callee')) > -1;
+        });
+
+        if (removable) {
+          let { container } = removable;
+          if (t.isVariableDeclarator(container) ||
+              t.isMemberExpression(container) ||
+              t.isAssignmentExpression(container)) {
+            path.replaceWith(path.node.arguments[0]);
+          } else {
+            if (t.isCallExpression(removable.parent) && state.opts.bindingsToStrip.indexOf(removable.parent.callee.name) === -1) {
+              path.replaceWith(path.node.arguments[0]);
+            } else {
+
+              path.remove();
+            }
+          }
+        }
       },
       ImportDeclaration(path, state) {
         if (path.node.source.value === state.opts.source) {

@@ -45,25 +45,6 @@ QUnit.test('assigns param one as assignment by default', (assert) => {
   `)
 });
 
-QUnit.test('delegates for VariableAssignments', (assert) => {
-
-  let transformed = transform(stripTight`
-    import { a } from '@glimmer/debug';
-    let stack = [{value() {}}];
-    let bStack = a(1);
-  `, {
-    delegate: {
-      a(path) {
-        path.parentPath.parentPath.remove();
-      }
-    }
-  });
-
-  assert.equal(transformed, stripTight`
-    let stack = [{ value() {} }];
-  `)
-});
-
 QUnit.test('handles AssignmentExpression', (assert) => {
   let transformed = transform(stripTight`
     import { a } from '@glimmer/debug';
