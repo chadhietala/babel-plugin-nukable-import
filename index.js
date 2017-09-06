@@ -27,7 +27,11 @@ function nukable(babel) {
                 if (t.isCallExpression(p.parentPath)) {
                   let _hasNestedBinding = hasNestedBinding(p.parentPath, bindingsToStrip);
                   if (!_hasNestedBinding || !isCallee(p)) {
-                    p.parentPath.remove();
+                    if (t.isMemberExpression(p.parentPath.parentPath)) {
+                      p.parentPath.replaceWith(p.parentPath.node.arguments[0])
+                    } else {
+                      p.parentPath.remove();
+                    }
                   }
                 } else {
                   p.remove();
