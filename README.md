@@ -4,7 +4,7 @@ Allows you to remove bindings from a specific import declaration source.
 
 ## Example
 
-```
+```js
 import {
   expectStackChange,
   assert,
@@ -24,7 +24,7 @@ APPEND_OPCODES.app(123, (vm) => {
 
 Will be compiled as:
 
-```
+```js
 APPEND_OPCODES.app(123, (vm) => {
   let { stack } = vm;
   let mgr = stack.pop();
