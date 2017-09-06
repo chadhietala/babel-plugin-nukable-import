@@ -38,7 +38,9 @@ function nukable(babel) {
                     }
                   }
                 } else {
-                  p.remove();
+                  if (!t.isObjectProperty(p.parentPath)) {
+                    p.remove();
+                  }
                 }
               }
             });

@@ -160,3 +160,15 @@ QUnit.test('retains member expressions recursive', (assert) => {
   `)
 });
 
+QUnit.test('handles bindings in nested object literals', (assert) => {
+  let transformed = transform(stripTight`
+    import { a, bro } from '@glimmer/debug';
+    let A = 1 + 1;
+    a('really wycats', { yes: bro });
+  `);
+
+  assert.equal(transformed, stripTight`
+    let A = 1 + 1;
+  `)
+});
+
