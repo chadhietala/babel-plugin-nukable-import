@@ -17,7 +17,7 @@ function nukable(babel) {
           bindingsToStrip.forEach(b => {
             let binding = bindings[b];
             binding.referencePaths.forEach(p => {
-              if (t.isVariableDeclarator(p.parentPath.parentPath)) {
+              if (t.isVariableDeclarator(p.parentPath.parentPath) || t.isAssignmentExpression(p.parentPath.parentPath)) {
                 if (opts.delegate && opts.delegate[p.node.name]) {
                   opts.delegate[p.node.name](p, t);
                 } else {
@@ -25,9 +25,13 @@ function nukable(babel) {
                 }
               } else {
                 if (t.isCallExpression(p.parentPath)) {
+
                   let _hasNestedBinding = hasNestedBinding(p.parentPath, bindingsToStrip);
+
                   if (!_hasNestedBinding || !isCallee(p)) {
-                    if (t.isMemberExpression(p.parentPath.parentPath)) {
+                    if (t.isMemberExpression(p.parentPath.parentPath) || isArgument(p.parentPath, t)) {
+                      // e.g. strippable('foo').split('').forEach((l) => { ... })
+                      //      myFunc(strippable('foo'))
                       p.parentPath.replaceWith(p.parentPath.node.arguments[0])
                     } else {
                       p.parentPath.remove();
@@ -81,6 +85,11 @@ function isCallee(path) {
 function hasNestedBinding(path, bindingsToStrip) {
   let { arguments: args } = path.node;
   return args.some(arg => bindingsToStrip.indexOf(arg.name) > -1)
+}
+
+function isArgument(path, t) {
+  return (t.isCallExpression(path.parentPath) ||
+         t.isMemberExpression(path.parentPath)) && path.parentPath.node.arguments.indexOf(path.node) > -1;
 }
 
 nukable.baseDir = function() {

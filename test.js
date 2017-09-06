@@ -64,6 +64,34 @@ QUnit.test('delegates for VariableAssignments', (assert) => {
   `)
 });
 
+QUnit.test('handles AssignmentExpression', (assert) => {
+  let transformed = transform(stripTight`
+    import { a } from '@glimmer/debug';
+    let stack = [{value() {}}];
+    let bStack;
+    bStack = a(1);
+  `);
+
+  assert.equal(transformed, stripTight`
+    let stack = [{ value() {} }];
+    let bStack;
+    bStack = 1;
+  `)
+});
+
+QUnit.test('handles strippable as argument', (assert) => {
+  let transformed = transform(stripTight`
+    import { a } from '@glimmer/debug';
+    const id = int => int;
+    id(a(1));
+  `);
+
+  assert.equal(transformed, stripTight`
+    const id = int => int;
+    id(1);
+  `)
+});
+
 QUnit.test('handles recursive removals', (assert) => {
   let transformed = transform(stripTight`
     import { a, b } from '@glimmer/debug';
@@ -103,7 +131,6 @@ QUnit.test('cleans unused imports', (assert) => {
     let A = 1 + 1;
   `)
 });
-
 
 QUnit.test('retains member expressions', (assert) => {
   let transformed = transform(stripTight`
