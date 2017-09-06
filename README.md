@@ -5,12 +5,20 @@ Allows you to remove bindings from a specific import declaration source.
 ## Example
 
 ```
-import { expectStackChange, assert } from '@glimmer/util';
+import {
+  expectStackChange,
+  assert,
+  check,
+  CheckInterface,
+  CheckFunction
+} from '@glimmer/debug';
 
 APPEND_OPCODES.app(123, (vm) => {
   let { stack } = vm;
-  expectStackChange(stack, 0, 'PrimitiveReference');
-  let value = assert(stack.pop(), 'Must have a value');
+  let mgr = check(stack.pop(), CheckInterface({ didRenderLayout: CheckFunction }));
+  mgr.didRenderLayout();
+  assert(stack.pop(), 'Must have a value');
+  expectStackChange(stack, -2, 'PrimitiveReference');
 });
 ```
 
@@ -19,7 +27,9 @@ Will be compiled as:
 ```
 APPEND_OPCODES.app(123, (vm) => {
   let { stack } = vm;
-  let value = stack.pop();
+  let mgr = stack.pop();
+  mgr.didRenderLayout();
+  stack.pop();
 });
 ```
 
