@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/chadhietala/babel-plugin-nukable-import.svg?branch=master)](https://travis-ci.org/chadhietala/babel-plugin-nukable-import)
+
 Allows you to remove bindings from a specific import declaration source.
 
 ## Example
