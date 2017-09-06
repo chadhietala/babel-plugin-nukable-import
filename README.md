@@ -30,7 +30,3 @@ plugins: [
   ['nukable-import', { source: '@glimmer/debug' }]
 ]
 ```
-
-## TODOs
-
-- Bindings in the `ObjectProperty` position are not stripped instead it is assumed they are children of another binding that will strip them. Likely we need to traverse up to understand the context.
