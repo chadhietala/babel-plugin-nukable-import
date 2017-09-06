@@ -77,3 +77,16 @@ QUnit.test('handles recursive removals', (assert) => {
   `)
 });
 
+QUnit.test('follows aliases', (assert) => {
+  let transformed = transform(stripTight`
+    import { a, b as inyoface } from '@glimmer/debug';
+    let A = 1 + 1;
+    a('wat');
+    a('lol', inyoface);
+  `);
+
+  assert.equal(transformed, stripTight`
+    let A = 1 + 1;
+  `)
+});
+
