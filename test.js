@@ -1,4 +1,5 @@
 const QUnit = require('qunitjs');
+const resolver = require('amd-name-resolver').moduleResolve;
 const babel = require('babel-core');
 const Nukable = require('./index');
 
@@ -11,6 +12,9 @@ QUnit.module('Strip stackCheck', {
   beforeEach() {
     transform = function(code, options = {}) {
       return babel.transform(code, {
+        filename: 'test',
+        moduleId: true,
+        getModuleId: resolver,
         plugins: [[Nukable, Object.assign({
           source: '@glimmer/debug'
         }, options)]]
@@ -153,3 +157,56 @@ QUnit.test('handles bindings in nested object literals', (assert) => {
   `)
 });
 
+QUnit.test('prunes exports', (assert) => {
+  let transformed = transform(stripTight`
+    export { a, bro } from '@glimmer/debug';
+    let A = 1 + 1;
+  `);
+
+  assert.equal(transformed, stripTight`
+    let A = 1 + 1;
+  `)
+});
+
+QUnit.test('delegates removals of call expressions', (assert) => {
+  let transformed = transform(stripTight`
+    import { a, bro } from '@glimmer/debug';
+    let A = 1 + 1;
+    bro('wat');
+    a(1);
+  `, {
+    delegate(name, path) {
+      if (name !== 'bro') {
+        path.parentPath.remove();
+      }
+    }
+  });
+
+  assert.equal(transformed, stripTight`
+    import { bro } from '@glimmer/debug';
+    let A = 1 + 1;
+    bro('wat');
+  `)
+});
+
+QUnit.test('delegates removals of identifiers', (assert) => {
+  let transformed = transform(stripTight`
+    import { a, bro } from '@glimmer/debug';
+    let A = 1 + 1;
+    let meta = bro[A];
+    meta ? a(1) : null;
+  `, {
+    delegate(name, path, t) {
+      if (name !== 'a') {
+        path.parentPath.replaceWith(t.nullLiteral())
+      }
+    }
+  });
+
+  assert.equal(transformed, stripTight`
+    import { a } from '@glimmer/debug';
+    let A = 1 + 1;
+    let meta = null;
+    meta ? a(1) : null;
+  `)
+});

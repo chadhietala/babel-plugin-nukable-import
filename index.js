@@ -1,3 +1,5 @@
+const nameResolver = require('amd-name-resolver').moduleResolve;
+
 function nukable(babel) {
   const { types: t } = babel;
 
@@ -39,7 +41,16 @@ function nukable(babel) {
           });
         },
       },
+
+      Identifier(path, state) {
+        let { delegate, bindingPaths } = state.opts;
+        if (delegate && bindingPaths.indexOf(path) > -1) {
+          delegate(path.node.name, path, t);
+        }
+      },
+
       CallExpression(path, state) {
+        let { delegate } = state.opts;
         let removable = path.find((p) => {
           return state.opts.bindingPaths.indexOf(p.get('callee')) > -1;
         });
@@ -49,19 +60,46 @@ function nukable(babel) {
           if (t.isVariableDeclarator(container) ||
               t.isMemberExpression(container) ||
               t.isAssignmentExpression(container)) {
-            path.replaceWith(path.node.arguments[0]);
+              if (delegate) {
+                delegate(path.node.callee.name, path.get('callee'), t);
+              } else {
+                path.replaceWith(path.node.arguments[0]);
+              }
           } else {
             if (t.isCallExpression(removable.parent) && state.opts.bindingsToStrip.indexOf(removable.parent.callee.name) === -1) {
-              path.replaceWith(path.node.arguments[0]);
+              if (delegate) {
+                delegate(path.node.callee.name, path.get('callee'), t);
+              } else {
+                path.replaceWith(path.node.arguments[0]);
+              }
             } else {
-
-              path.remove();
+              if (delegate) {
+                delegate(path.node.callee.name, path.get('callee'), t);
+              } else {
+                path.remove();
+              }
             }
           }
         }
       },
+
+      ExportDeclaration(path, state) {
+        if (path.node.source) {
+          let resolvedName = nameResolver(path.node.source.value, this.getModuleName());
+          if (resolvedName === state.opts.source) {
+            path.remove();
+          }
+        }
+      },
+
       ImportDeclaration(path, state) {
-        if (path.node.source.value === state.opts.source) {
+        let source = path.node.source.value;
+
+        if (source.charAt(0) === '.') {
+          source = nameResolver(source, this.getModuleName());
+        }
+
+        if (source === state.opts.source && path.node.specifiers.length === 0) {
           path.remove();
         }
       }
