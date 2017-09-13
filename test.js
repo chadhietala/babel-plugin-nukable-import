@@ -49,6 +49,21 @@ QUnit.test('assigns param one as assignment by default', (assert) => {
   `)
 });
 
+QUnit.test('something expressions', (assert) => {
+  let transformed = transform(stripTight`
+    import { a } from '@glimmer/debug';
+    let stack = [{value() {}}];
+    let foo = 1;
+    let bStack = a(stack) - foo;
+  `);
+
+  assert.equal(transformed, stripTight`
+    let stack = [{ value() {} }];
+    let foo = 1;
+    let bStack = stack - foo;
+  `)
+});
+
 QUnit.test('handles AssignmentExpression', (assert) => {
   let transformed = transform(stripTight`
     import { a } from '@glimmer/debug';

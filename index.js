@@ -59,7 +59,8 @@ function nukable(babel) {
           let { container } = removable;
           if (t.isVariableDeclarator(container) ||
               t.isMemberExpression(container) ||
-              t.isAssignmentExpression(container)) {
+              t.isAssignmentExpression(container) ||
+              t.isBinaryExpression(container)) {
               if (delegate) {
                 delegate(path.node.callee.name, path.get('callee'), t);
               } else {
