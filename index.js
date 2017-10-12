@@ -67,11 +67,14 @@ function nukable(babel) {
                 path.replaceWith(path.node.arguments[0]);
               }
           } else {
-            if (t.isCallExpression(removable.parent) && state.opts.bindingsToStrip.indexOf(removable.parent.callee.name) === -1) {
-              if (delegate) {
-                delegate(path.node.callee.name, path.get('callee'), t);
-              } else {
-                path.replaceWith(path.node.arguments[0]);
+            let parent = removable.parent;
+            if (isExpressionMeaningful(parent)) {
+              if (!parent.callee || shouldStrip(state, parent.callee.name)) {
+                if (delegate) {
+                  delegate(path.node.callee.name, path.get('callee'), t);
+                } else {
+                  path.replaceWith(path.node.arguments[0]);
+                }
               }
             } else {
               if (delegate) {
@@ -106,6 +109,14 @@ function nukable(babel) {
       }
     }
   };
+
+  function isExpressionMeaningful(path) {
+    return t.isCallExpression(path) || t.isReturnStatement(path);
+  }
+}
+
+function shouldStrip(state, name) {
+  return state.opts.bindingsToStrip.indexOf(name) === -1;
 }
 
 function isCallee(path) {

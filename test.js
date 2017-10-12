@@ -225,3 +225,25 @@ QUnit.test('delegates removals of identifiers', (assert) => {
     meta ? a(1) : null;
   `)
 });
+
+QUnit.test('return values are retained', (assert) => {
+  let transformed = stripTight([transform(stripTight`
+    import { check } from '@glimmer/debug';
+
+    export default class PositionalArguments {
+      at(position) {
+        let stack = this.stack;
+        return check(stack.get(position), true);
+      }
+    }
+  `)]);
+
+  assert.equal(transformed, stripTight`
+    export default class PositionalArguments {
+      at(position) {
+        let stack = this.stack;
+        return stack.get(position);
+      }
+    }
+  `);
+});
