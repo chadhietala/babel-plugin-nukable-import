@@ -79,6 +79,19 @@ QUnit.test('handles AssignmentExpression', (assert) => {
   `)
 });
 
+QUnit.test('handles ternary', (assert) => {
+  let transformed = transform(stripTight`
+    import { a } from '@glimmer/debug';
+    let bStack;
+    bStack = bStack ? 2 : a(1);
+  `);
+
+  assert.equal(transformed, stripTight`
+    let bStack;
+    bStack = bStack ? 2 : 1;
+  `)
+});
+
 QUnit.test('handles strippable as argument', (assert) => {
   let transformed = transform(stripTight`
     import { a } from '@glimmer/debug';
