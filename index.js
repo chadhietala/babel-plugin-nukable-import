@@ -60,7 +60,8 @@ function nukable(babel) {
           if (t.isVariableDeclarator(container) ||
               t.isMemberExpression(container) ||
               t.isAssignmentExpression(container) ||
-              t.isBinaryExpression(container)) {
+              t.isBinaryExpression(container) ||
+              t.isConditionalExpression(container)) {
               if (delegate) {
                 delegate(path.node.callee.name, path.get('callee'), t);
               } else {
